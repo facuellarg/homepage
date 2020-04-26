@@ -1,0 +1,38 @@
+.menu {
+    list-style-type: none;
+    width: 100vw;
+    height: 60px;
+    background-image:url("../../../assets/images/background-tile.png");
+    z-index: 100;
+    font-size: 40px;
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    top:0;
+    overflow: hidden;
+
+}
+
+.menu__li {
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    vertical-align: text-top;
+
+}
+.menu__li:hover {
+    background-color: rgba(0,0,255, 0);
+}
+.menu__li__a {
+    display: inline-block;
+    color: #000;
+    padding: 8px 16px;
+    text-decoration: none;
+
+}
+
+/* Change the link color on hover */
+.menu__li__a:hover {
+    background-color: rgba(0,0,255, 0.1);
+    color: white;
+}

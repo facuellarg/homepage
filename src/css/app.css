@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css?family=Baloo+2|Titillium+Web&display=swap');
+.main-container{
+    font-family: 'Titillium Web', sans-serif;
+    margin:0px;
+}
+body{
+    background-image: url("../assets/images/background-tile.png");
+    /*background-image: radial-gradient(#66a3ff,#0047b3);*/
+}
+a{
+    text-decoration: none;
+}
+
+img{
+    max-height: 100%;
+    max-width: 100%;
+}
+
+.profiles{
+    margin:0;
+    padding: 80px;
+    height: 70vh;
+    /*background-color: red;*/
+    display: flex;
+    flex-wrap: wrap;
+    overflow: auto;
+    justify-content: flex-start;
+
+}
+.main-container__title{
+    margin-top: 0px;
+    color: white;
+    font-family: 'Baloo 2', cursive;
+    font-size: 3em;
+}
+.main-container__welcome-text{
+    padding-top: 70px;
+    color: white;
+    font-size: 2em;
+}
+
+.main-container__p1{
+    padding-top: 80px;
+}
