@@ -1,9 +1,25 @@
 import React from "react";
 import Sketch from "react-p5";
 import fire from '../../.././assets/images/fire.jpg'
-
-// import font from '.././assets/fonts/AppleBraille-Outline8Dot-100.vlw'
+import TitilliumWeb from '../../../assets/fonts/TitilliumWeb.ttf'
+import AsciiArt from "../../../library/asciiart";
 const P5GrayScale =()=> {
+
+  const preload=(p5) =>{
+     font = p5.loadFont(TitilliumWeb)
+  }
+
+  var myAsciiArt;
+  var asciiart_width = 120; var asciiart_height = 60;
+  var ascii_arr;
+
+  let initWidth,initHeight,pg1,pg2,origin,transformed,scale=0.4,font,lastKey,img_canvas,ascii_canvas;
+  let transformation ="Any";
+  let grayscale='#@o|.';
+  let div = 1;
+  let ascii = ""
+  let show_image=true;
+  let to_i= 255/ascii.length
   const EdgeMask=[[-1,-1,-1],[-1,8,-1],[-1,-1,-1]]
   const NormalizedBlurMask =[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]]
   const GausianBlurMask =[[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]]
@@ -12,39 +28,53 @@ const P5GrayScale =()=> {
     [-1, -1, 0, 1, 1],
     [-1, 0, 1, 1, 1],
     [0, 1, 1, 1, 1]]
-  var origin,transformed,initWidth,initHeight;
-  var lastKey = null
-  var scale = 0.4
-  var transformation = 'Any'
-  // let myFont;
-  // const preload=(p5) =>{
-  //   myFont = p5.loadFont(font)
-  // }
 
   const  setup = (p5, canvasParentRef) => {
     initWidth = p5.windowWidth;
     initHeight = p5.windowHeight;
     p5.createCanvas(initWidth,initHeight).parent(canvasParentRef); // use parent to render canvas in this ref (without that p5 render this canvas outside your component)
-
-
-    p5.textSize(30)
-
     origin = p5.loadImage(fire)
     transformed = p5.loadImage(fire)
-    p5.textAlign(p5.CENTER, p5.TOP);
+    pg1 = p5.createGraphics(initWidth/2,initHeight)
+    pg1.textFont(font,30)
+    pg1.textAlign(pg1.CENTER,pg1.TOP)
+    pg2 = p5.createGraphics(initWidth/2,initHeight)
+    img_canvas=p5.createGraphics(initWidth*scale, initWidth*scale)
+    ascii_canvas=p5.createGraphics(asciiart_width*1.5,asciiart_height*1.5)
+    pg2.textFont(font,30)
+    pg2.textAlign(pg2.CENTER,pg2.TOP)
+
+    myAsciiArt = new AsciiArt(p5);
+    p5.frameRate(30);
 
   };
 
   const draw = p5 => {
 
     p5.background('rgba(0,0,0, 0)');
-    p5.text('Original Image',initWidth*0.05,10,initWidth*scale, 50);
-    p5.fill(255,255,255)
-    p5.stroke(0)
 
-    p5.image(origin,initWidth*0.05,50,initWidth*scale, initWidth*scale)
-    p5.text(`Transformed Image: ${transformation}`,initWidth/2,10,initWidth*scale,50);
-    p5.image(transformed,initWidth/2,50,initWidth*scale, initWidth*scale)
+    pg1.image(origin,initWidth*0.05,50,initWidth*scale, initWidth*scale)
+    pg1.text('Original Image',initWidth*0.05,10,initWidth*scale, 50);
+    pg1.fill(255)
+    pg1.stroke(0)
+    p5.image(pg1,0,0)
+    pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
+    ascii_arr=null
+    img_canvas.image(transformed,0,0,img_canvas.width,img_canvas.height)
+    ascii_canvas.image(transformed,0,0,ascii_canvas.width,ascii_canvas.height)
+    if(show_image){
+      pg2.image(img_canvas,initWidth*0.05,50,initWidth*scale, initWidth*scale)
+      pg2.fill(255)
+      pg2.stroke(0)
+     }else{
+      p5.fill(0)
+      p5.textAlign(p5.CENTER, p5.CENTER); p5.textFont(font, 8); p5.textStyle(p5.NORMAL);
+      p5.rect(initWidth/2+initWidth*0.05,50,initWidth*scale, initWidth*scale);
+      p5.fill(255)
+      ascii_arr = myAsciiArt.convert(ascii_canvas);
+      myAsciiArt.typeArray2d(ascii_arr, p5,initWidth/2+initWidth*0.05,50,initWidth*scale, initWidth*scale);
+    }
+    p5.image(pg2,initWidth/2,0)
 
 
 
@@ -81,36 +111,49 @@ const P5GrayScale =()=> {
     if (lastKey ==='1'){
       if (p5.key==='a'){
         to_gray_scale()
+        show_image = true
         setTransform(p5,'GS avarage')
 
       }else if (p5.key==='l'){
         to_gray_scale(0.299,0.587,0.114)
+        show_image = true
         setTransform(p5,'GS lum')
 
       }else if (p5.key === 'r'){
         reset_image()
+        show_image = true
         setTransform(p5,'Any')
 
       }else if(p5.key === 'e'){
         convolution(EdgeMask)
+        show_image = true
         setTransform(p5,'Strong Edges')
       }else if(p5.key=== 'n'){
         convolution(NormalizedBlurMask)
+        show_image = true
         setTransform(p5,'Normalized Blur')
       }else if(p5.key === 'g'){
+        show_image = true
         convolution(GausianBlurMask)
         setTransform(p5,'Gaussian Blur')
       }else if(p5.key === 'm'){
+        show_image = true
         convolution(Mask)
         setTransform(p5,'Mask')
+      }else if(p5.key=='t'){
+        show_image = false
+        setTransform(p5,'Ascii')
       }
     }
+
     lastKey = p5.key
 
   }
+
   const setTransform=(p5,s)=>{
     transformation = s
     p5.clear();
+    pg2.clear();
 
   }
 
@@ -150,7 +193,7 @@ const P5GrayScale =()=> {
 
   }
 
-  return(<Sketch setup={setup} draw={draw} keyPressed={keyPressed}/>)
+  return(<Sketch preload={preload} setup={setup} draw={draw} keyPressed={keyPressed}/>)
 
 }
 export default P5GrayScale;
