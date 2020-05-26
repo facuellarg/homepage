@@ -1,14 +1,30 @@
 import React from "react";
 import Sketch from "react-p5";
-import fire from '../../.././assets/images/fire.jpg'
 import TitilliumWeb from '../../../assets/fonts/TitilliumWeb.ttf'
 import AsciiArt from "../../../library/asciiart";
 const P5p1 =()=> {
 
+  let myCapture
+  function initCaptureDevice(p5) {
+    try {
+        myCapture = p5.createCapture(p5.VIDEO);
+        myCapture.size(initWidth/2,initHeight);
+        myCapture.elt.setAttribute('playsinline', '');
+        myCapture.hide();
+        console.log(
+        '[initCaptureDevice] capture ready. Resolution: ' +
+        myCapture.width + ' ' + myCapture.height
+        );
+
+
+    } catch(_err) {
+        console.log('[initCaptureDevice] capture error: ' + _err);
+    }
+  }
   const preload=(p5) =>{
      font = p5.loadFont(TitilliumWeb)
   }
-
+  let drawing =()=>{ transformed = origin.get()};
   var myAsciiArt;
   var asciiart_width = 120; var asciiart_height = 60;
   var ascii_arr;
@@ -29,17 +45,18 @@ const P5p1 =()=> {
     initWidth = p5.windowWidth;
     initHeight = p5.windowHeight;
     p5.createCanvas(initWidth,initHeight).parent(canvasParentRef); // use parent to render canvas in this ref (without that p5 render this canvas outside your component)
-    origin = p5.loadImage(fire)
-    transformed = p5.loadImage(fire)
     pg1 = p5.createGraphics(initWidth/2,initHeight)
     pg1.textFont(font,30)
     pg1.textAlign(pg1.CENTER,pg1.TOP)
+    initCaptureDevice(p5);
     pg2 = p5.createGraphics(initWidth/2,initHeight)
     img_canvas=p5.createGraphics(initWidth*scale, initWidth*scale)
     ascii_canvas=p5.createGraphics(asciiart_width*1.5,asciiart_height*1.5)
     pg2.textFont(font,30)
     pg2.textAlign(pg2.CENTER,pg2.TOP)
-
+    origin =  p5.createCapture(p5.VIDEO);
+    origin.hide()
+    transformed =  origin.get()
     myAsciiArt = new AsciiArt(p5);
     p5.frameRate(30);
 
@@ -47,17 +64,19 @@ const P5p1 =()=> {
 
   const draw = p5 => {
 
+
     p5.background('rgba(0,0,0, 0)');
-    pg1.image(origin,initWidth*0.05,50,initWidth*scale, initWidth*scale)
+    pg1.image(origin.get(),initWidth*0.05,50,initWidth*scale, initWidth*scale)
     pg1.text('Original Image',initWidth*0.05,10,initWidth*scale, 50);
     pg1.fill(255)
     pg1.stroke(0)
     p5.image(pg1,0,0)
     pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
     ascii_arr=null
-    img_canvas.image(transformed,0,0,img_canvas.width,img_canvas.height)
-    ascii_canvas.image(transformed,0,0,ascii_canvas.width,ascii_canvas.height)
+    img_canvas.image(transformed.get(),0,0,img_canvas.width,img_canvas.height)
+    ascii_canvas.image(origin.get(),0,0,ascii_canvas.width,ascii_canvas.height)
     if(show_image){
+      drawing()
       pg2.image(img_canvas,initWidth*0.05,50,initWidth*scale, initWidth*scale)
       pg2.fill(255)
       pg2.stroke(0)
@@ -76,23 +95,29 @@ const P5p1 =()=> {
   };
 
   const to_gray_scale = (r = 0.33,g=0.33,b=0.33) => {
-    origin.loadPixels();
-    transformed.loadPixels()
-    for (var i=0; i < origin.width*origin.height*4;i+=4){
+    transformed = origin.get()
+     transformed.loadPixels()
+     for (var i=0; i < transformed.width*transformed.height*4;i+=4){
 
-      var y = r*(origin.pixels[i])  +
-          g*(origin.pixels[i+1])+
-          b*(origin.pixels[i+2]);
+       var y = r*(transformed.pixels[i])  +
+           g*(transformed.pixels[i+1])+
+           b*(transformed.pixels[i+2]);
 
-      transformed.pixels[i] = (y);
-      transformed.pixels[i+1] = (y);
-      transformed.pixels[i+2] = (y);
-    }
-    transformed.updatePixels();
+       transformed.pixels[i] = (y);
+       transformed.pixels[i+1] = (y);
+       transformed.pixels[i+2] = (y);
+     }
+     transformed.updatePixels();
+
   }
-
+  const to_gray_lum=()=>{
+    to_gray_scale(0.299,0.587,0.114)
+  }
+  const to_gray_avg=()=>{
+    to_gray_scale()
+  }
   const reset_image =()=>{
-    origin.loadPixels()
+    transformed = origin.get()
     transformed.loadPixels()
     for (var i=0; i < origin.width*origin.height*4;i+=4){
       transformed.pixels[i] = origin.pixels[i];
@@ -105,35 +130,35 @@ const P5p1 =()=> {
   const keyPressed = p5 =>{
     if (lastKey ==='1'){
       if (p5.key==='a'){
-        to_gray_scale()
+        drawing = to_gray_avg
         show_image = true
         setTransform(p5,'GS avarage')
 
       }else if (p5.key==='l'){
-        to_gray_scale(0.299,0.587,0.114)
+        drawing = to_gray_lum
         show_image = true
         setTransform(p5,'GS lum')
 
       }else if (p5.key === 'r'){
-        reset_image()
+        drawing = drawing =()=>{ transformed = origin.get()};
         show_image = true
         setTransform(p5,'Any')
 
       }else if(p5.key === 'e'){
-        convolution(EdgeMask)
+        drawing = ()=>convolution(EdgeMask)
         show_image = true
         setTransform(p5,'Strong Edges')
       }else if(p5.key=== 'n'){
-        convolution(NormalizedBlurMask)
+        drawing = ()=>convolution(NormalizedBlurMask)
         show_image = true
         setTransform(p5,'Normalized Blur')
       }else if(p5.key === 'g'){
         show_image = true
-        convolution(GausianBlurMask)
+        drawing = ()=>convolution(GausianBlurMask)
         setTransform(p5,'Gaussian Blur')
       }else if(p5.key === 'm'){
         show_image = true
-        convolution(Mask)
+        drawing = ()=>convolution(Mask)
         setTransform(p5,'Mask')
       }else if(p5.key==='t'){
         show_image = false

@@ -2,7 +2,7 @@ import React from 'react';
 import CardMedia from "./components/CardMedia/CardMedia";
 import avatar from "../assets/images/avatar1.png"
 import Menu from "./components/Menu/Menu"
-import GrayScale from "./components/GrayScale/GrayScale";
+import Project1 from "./components/Project1/Project1";
 
 import './../css/app.css'
 
@@ -34,7 +34,7 @@ const App = () =>{
 
          <a href="#p1" name="p1"></a>
             <div className="main-container__p1">
-                <GrayScale></GrayScale>
+                <Project1></Project1>
             </div>
 
      </div>
