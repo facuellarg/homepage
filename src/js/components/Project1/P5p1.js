@@ -3,7 +3,7 @@ import Sketch from "react-p5";
 import fire from '../../.././assets/images/fire.jpg'
 import TitilliumWeb from '../../../assets/fonts/TitilliumWeb.ttf'
 import AsciiArt from "../../../library/asciiart";
-const P5GrayScale =()=> {
+const P5p1 =()=> {
 
   const preload=(p5) =>{
      font = p5.loadFont(TitilliumWeb)
@@ -196,4 +196,4 @@ const P5GrayScale =()=> {
   return(<Sketch preload={preload} setup={setup} draw={draw} keyPressed={keyPressed}/>)
 
 }
-export default P5GrayScale;
+export default P5p1;
