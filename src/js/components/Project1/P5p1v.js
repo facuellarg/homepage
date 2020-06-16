@@ -1,7 +1,6 @@
 import React from "react";
 import Sketch from "react-p5";
 import TitilliumWeb from '../../../assets/fonts/TitilliumWeb.ttf'
-import AsciiArt from "../../../library/asciiart";
 const P5p1 =()=> {
 
   let myCapture
@@ -23,15 +22,23 @@ const P5p1 =()=> {
   }
   const preload=(p5) =>{
      font = p5.loadFont(TitilliumWeb)
-  }
-  let drawing =()=>{ transformed = origin.get()};
-  var myAsciiArt;
-  var asciiart_width = 120; var asciiart_height = 60;
-  var ascii_arr;
 
-  let initWidth,initHeight,pg1,pg2,origin,transformed,scale=0.4,font,lastKey,img_canvas,ascii_canvas;
+  }
+
+  let cols = 500;
+  let scale=0.4
+  let tiles = 5
+  const max_bound = 20;
+  let image_ascii;
+  let width_tile,height_tile;
+  let to_ascii=false
+  const ascii_array = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~i!lI;:,\"^`. "
+
+  let drawing =()=>{ transformed = origin.get()};
+
+  let initWidth,initHeight,pg1,pg2,origin,transformed,font,lastKey;
   let transformation ="Any";
-  let show_image=true;
+
   const EdgeMask=[[-1,-1,-1],[-1,8,-1],[-1,-1,-1]]
   const NormalizedBlurMask =[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]]
   const GausianBlurMask =[[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]]
@@ -50,16 +57,16 @@ const P5p1 =()=> {
     pg1.textAlign(pg1.CENTER,pg1.TOP)
     initCaptureDevice(p5);
     pg2 = p5.createGraphics(initWidth/2,initHeight)
-    img_canvas=p5.createGraphics(initWidth*scale, initWidth*scale)
-    ascii_canvas=p5.createGraphics(asciiart_width*1.5,asciiart_height*1.5)
     pg2.textFont(font,30)
     pg2.textAlign(pg2.CENTER,pg2.TOP)
+    image_ascii=p5.createGraphics(initWidth/2,initHeight)
+    image_ascii.fill(0)
+    image_ascii.textSize(tiles)
+    image_ascii.textStyle(pg2.NORMAL)
+    image_ascii.textAlign(pg2.CENTER)
     origin =  p5.createCapture(p5.VIDEO);
     origin.hide()
     transformed =  origin.get()
-    myAsciiArt = new AsciiArt(p5);
-    p5.frameRate(30);
-
   };
 
   const draw = p5 => {
@@ -71,22 +78,14 @@ const P5p1 =()=> {
     pg1.fill(255)
     pg1.stroke(0)
     p5.image(pg1,0,0)
-    pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
-    ascii_arr=null
-    img_canvas.image(transformed.get(),0,0,img_canvas.width,img_canvas.height)
-    ascii_canvas.image(origin.get(),0,0,ascii_canvas.width,ascii_canvas.height)
-    if(show_image){
-      drawing()
-      pg2.image(img_canvas,initWidth*0.05,50,initWidth*scale, initWidth*scale)
-      pg2.fill(255)
-      pg2.stroke(0)
+    
+    drawing()
+    if(to_ascii){
+      pg2.image(image_ascii,initWidth*0.05,50,initWidth*scale,initWidth*scale)
+      pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
      }else{
-      p5.fill(0)
-      p5.textAlign(p5.CENTER, p5.CENTER); p5.textFont(font, 8); p5.textStyle(p5.NORMAL);
-      p5.rect(initWidth/2+initWidth*0.05,50,initWidth*scale, initWidth*scale);
-      p5.fill(255)
-      ascii_arr = myAsciiArt.convert(ascii_canvas);
-      myAsciiArt.typeArray2d(ascii_arr, p5,initWidth/2+initWidth*0.05,50,initWidth*scale, initWidth*scale);
+      pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
+      pg2.image(transformed,initWidth*0.05,50,initWidth*scale, initWidth*scale)
     }
     p5.image(pg2,initWidth/2,0)
 
@@ -116,60 +115,94 @@ const P5p1 =()=> {
   const to_gray_avg=()=>{
     to_gray_scale()
   }
-  const reset_image =()=>{
-    transformed = origin.get()
-    transformed.loadPixels()
-    for (var i=0; i < origin.width*origin.height*4;i+=4){
-      transformed.pixels[i] = origin.pixels[i];
-      transformed.pixels[i+1] = origin.pixels[i+1];
-      transformed.pixels[i+2] = origin.pixels[i+2];
-    }
-    transformed.updatePixels()
-  }
+
 
   const keyPressed = p5 =>{
     if (lastKey ==='1'){
       if (p5.key==='a'){
         drawing = to_gray_avg
-        show_image = true
+        to_ascii = false
         setTransform(p5,'GS avarage')
 
       }else if (p5.key==='l'){
         drawing = to_gray_lum
-        show_image = true
+        to_ascii = false
         setTransform(p5,'GS lum')
 
       }else if (p5.key === 'r'){
         drawing = drawing =()=>{ transformed = origin.get()};
-        show_image = true
+        to_ascii = false
         setTransform(p5,'Any')
 
       }else if(p5.key === 'e'){
         drawing = ()=>convolution(EdgeMask)
-        show_image = true
+        to_ascii = false
         setTransform(p5,'Strong Edges')
       }else if(p5.key=== 'n'){
         drawing = ()=>convolution(NormalizedBlurMask)
-        show_image = true
+        to_ascii = false
         setTransform(p5,'Normalized Blur')
       }else if(p5.key === 'g'){
-        show_image = true
-        drawing = ()=>convolution(GausianBlurMask)
+        to_ascii = false
+        drawing = () =>convolution(GausianBlurMask)
         setTransform(p5,'Gaussian Blur')
       }else if(p5.key === 'm'){
-        show_image = true
+        to_ascii = false
         drawing = ()=>convolution(Mask)
         setTransform(p5,'Mask')
       }else if(p5.key==='t'){
-        show_image = false
-        setTransform(p5,'Ascii')
+        drawing = () =>image_to_ascii(p5)
+        setTransform(p5,'Ascii Tile size: '+tiles)
+      }else if(p5.keyCode === p5.UP_ARROW){
+        tiles +=1 
+        tiles = Math.min(tiles, max_bound)
+        drawing = () =>image_to_ascii(p5)
+        setTransform(p5,'Ascii Tile size: '+tiles)
+      }else if(p5.keyCode === p5.DOWN_ARROW){
+        tiles -=1 
+        tiles = Math.max(tiles, 1)
+        drawing = () =>image_to_ascii(p5)
+        setTransform(p5,'Ascii Tile size: '+tiles)
       }
     }
 
     lastKey = p5.key
 
   }
+  const image_to_ascii= p5 =>{
+    cols = origin.width/tiles
+    to_gray_scale(0.2126,0.7152,0.0722)
+    
+    let aspect_ratio=transformed.width/transformed.height
+    width_tile = Math.round(transformed.width/cols)
+    height_tile = Math.round(width_tile/aspect_ratio)  
+    init_image_ascii(p5)
+    transformed.loadPixels()
+    for (let i = 0; i < transformed.height; i+=height_tile) {
+    for (let j = 0; j < transformed.width; j+=width_tile){
+      let k=0,l=0
+      let brightness_avarage = 0;
+      for ( k=0; k<height_tile;k++){   
+        for( l=0;l<width_tile;l++){
+          let current_index=((k+i)*transformed.width+(l+j))*4
+          brightness_avarage += transformed.pixels[current_index]
+        }
+      }
+      brightness_avarage = brightness_avarage/(k*l)
+      image_ascii.text(ascii_array[parseInt((brightness_avarage*(ascii_array.length-1))/255)],j*(image_ascii.width/transformed.width),i*((image_ascii.height/transformed.height)))
+    }
+  }
+    to_ascii=true
 
+  }
+  const init_image_ascii = p5=>{
+    image_ascii=p5.createGraphics(initWidth/2,initHeight)
+    image_ascii.fill(0)
+    image_ascii.background(255)
+    image_ascii.textSize(Math.sqrt(width_tile*height_tile))
+    image_ascii.textStyle(pg2.NORMAL)
+    image_ascii.textAlign(pg2.CENTER)
+  }
   const setTransform=(p5,s)=>{
     transformation = s
     p5.clear();

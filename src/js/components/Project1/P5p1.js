@@ -28,7 +28,7 @@ const P5p1 =()=> {
     [-1, -1, 0, 1, 1],
     [-1, 0, 1, 1, 1],
     [0, 1, 1, 1, 1]]
-  let slider;
+  
 
   const  setup = (p5, canvasParentRef) => {
     initWidth = p5.windowWidth;
@@ -39,8 +39,8 @@ const P5p1 =()=> {
     pg1 = p5.createGraphics(initWidth/2,initHeight)
     pg1.textFont(font,30)
     pg1.textAlign(pg1.CENTER,pg1.TOP)
-    slider = p5.createSlider(1, max_bound, 6);
-    slider.hide()
+    // slider = p5.createSlider(1, max_bound, 6);
+    // slider.hide()
     pg2 = p5.createGraphics(initWidth/2,initHeight)
     image_ascii=p5.createGraphics(initWidth/2,initHeight)
     image_ascii.fill(0)
@@ -55,6 +55,7 @@ const P5p1 =()=> {
   const init_image_ascii = p5=>{
     image_ascii=p5.createGraphics(initWidth/2,initHeight)
     image_ascii.fill(0)
+    image_ascii.background(255)
     image_ascii.textSize(Math.sqrt(width_tile*height_tile))
     image_ascii.textStyle(pg2.NORMAL)
     image_ascii.textAlign(pg2.CENTER)
@@ -71,7 +72,8 @@ const P5p1 =()=> {
     
 
     if(to_ascii){
-      pg2.background(255)
+      // pg2.background(255)
+      
       pg2.image(image_ascii,initWidth*0.05,50,initWidth*scale,initWidth*scale)
       pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
      }else{
@@ -149,13 +151,13 @@ const P5p1 =()=> {
         image_to_ascii(p5)
         setTransform(p5,'Ascii Tile size: '+tiles)
       }
-      if(p5.keyCode === p5.UP_ARROW){
+      else if(p5.keyCode === p5.UP_ARROW){
         tiles +=1 
         tiles = Math.min(tiles, max_bound)
         image_to_ascii(p5)
         setTransform(p5,'Ascii Tile size: '+tiles)
       }
-      if(p5.keyCode === p5.DOWN_ARROW){
+      else if(p5.keyCode === p5.DOWN_ARROW){
         tiles -=1 
         tiles = Math.max(tiles, 1)
         image_to_ascii(p5)
@@ -167,10 +169,8 @@ const P5p1 =()=> {
 
   }
   const image_to_ascii= p5 =>{
-    console.log(tiles)
-    cols =origin.width/tiles
+    cols = origin.width/tiles
     to_gray_scale(0.2126,0.7152,0.0722)
-    pg2.background(255)
     let aspect_ratio=transformed.width/transformed.height
     width_tile = Math.round(transformed.width/cols)
     height_tile = Math.round(width_tile/aspect_ratio)  
