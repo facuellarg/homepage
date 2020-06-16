@@ -17,18 +17,19 @@ const P5p1 =()=> {
   let width_tile,height_tile;
   let to_ascii=false
   const ascii_array = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~i!lI;:,\"^`. "
-  
+  let histogram=new Array(255)
+  let histMax;
   let initWidth,initHeight,pg1,pg2,origin,transformed,font,lastKey;
   let transformation ="Any";
   const EdgeMask=[[-1,-1,-1],[-1,8,-1],[-1,-1,-1]]
   const NormalizedBlurMask =[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]]
   const GausianBlurMask =[[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]]
-  const Mask = [[-1, -1, -1, -1, 0],
-    [-1, -1, -1, 0, 1],
-    [-1, -1, 0, 1, 1],
-    [-1, 0, 1, 1, 1],
-    [0, 1, 1, 1, 1]]
-  
+  const Laplacian = [[ -1, -1, -1, -1, -1, ],  
+  [ -1, -1, -1, -1, -1, ],  
+  [ -1, -1, 24, -1, -1, ],  
+  [ -1, -1, -1, -1, -1, ],  
+  [ -1, -1, -1, -1, -1  ]]
+  let show_histogram = false;
 
   const  setup = (p5, canvasParentRef) => {
     initWidth = p5.windowWidth;
@@ -51,6 +52,8 @@ const P5p1 =()=> {
     pg2.textFont(font,30)
     pg2.textAlign(pg2.CENTER,pg2.TOP)
     p5.frameRate(30);
+    calc_histogram(p5,transformed)
+    
   };
   const init_image_ascii = p5=>{
     image_ascii=p5.createGraphics(initWidth/2,initHeight)
@@ -70,18 +73,35 @@ const P5p1 =()=> {
     pg1.stroke(0)
     p5.image(pg1,0,0)
     
-
+    
     if(to_ascii){
       // pg2.background(255)
-      
       pg2.image(image_ascii,initWidth*0.05,50,initWidth*scale,initWidth*scale)
-      pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
      }else{
-      pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
       pg2.image(transformed,initWidth*0.05,50,initWidth*scale, initWidth*scale)
-
+      
+      // pg2.colorMode(p5.HSB)
+      }
+      if(show_histogram){
+        pg2.stroke(255)
+        for (let i = 0; i < histogram.length; i ++) {
+          // pg2.stroke(i, 100, 100, 1);
+          let hist_heigh = parseInt(p5.map(histogram[i],0,histMax,50 + initWidth*scale,50))
+          // Map i (from 0..img.width) to a location in the histogram (0..255)
+          let x = parseInt(p5.map(i, 0, 254, initWidth*0.05, initWidth*0.05+initWidth*scale));
+          // Convert the histogram value to a location between 
+          // the bottom and the top of the picture
+          // let y = parseInt(p5.map(histogram[which], 0, histMax, transformed.height, 0));
+          pg2.line(x, 50 + initWidth*scale, x, hist_heigh);
+          
+      }
+      pg2.noStroke()
+      
     }
+  
+    pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
     p5.image(pg2,initWidth/2,0)
+    
 
 
 
@@ -120,55 +140,63 @@ const P5p1 =()=> {
         to_gray_scale()
         to_ascii = false
         setTransform(p5,'GS avarage')
-
+        calc_histogram(p5,transformed)
       }else if (p5.key==='l'){
         to_gray_scale(0.299,0.587,0.114)
         to_ascii = false
         setTransform(p5,'GS lum')
+        calc_histogram(p5,transformed)
 
       }else if (p5.key === 'r'){
         reset_image()
         to_ascii = false
         setTransform(p5,'Any')
-
+        calc_histogram(p5,transformed)
       }else if(p5.key === 'e'){
         convolution(EdgeMask)
         to_ascii = false
         setTransform(p5,'Strong Edges')
+        calc_histogram(p5,transformed)
       }else if(p5.key=== 'n'){
         convolution(NormalizedBlurMask)
         to_ascii = false
         setTransform(p5,'Normalized Blur')
+        calc_histogram(p5,transformed)
       }else if(p5.key === 'g'){
         to_ascii = false
         convolution(GausianBlurMask)
         setTransform(p5,'Gaussian Blur')
+        calc_histogram(p5,transformed)
       }else if(p5.key === 'm'){
         to_ascii = false
-        convolution(Mask)
-        setTransform(p5,'Mask')
+        convolution(Laplacian)
+        setTransform(p5,'Laplacian')
+        calc_histogram(p5,transformed)
       }else if(p5.key==='t'){
         image_to_ascii(p5)
         setTransform(p5,'Ascii Tile size: '+tiles)
-      }
-      else if(p5.keyCode === p5.UP_ARROW){
+        
+      }else if(p5.keyCode === p5.UP_ARROW){
         tiles +=1 
         tiles = Math.min(tiles, max_bound)
         image_to_ascii(p5)
         setTransform(p5,'Ascii Tile size: '+tiles)
-      }
-      else if(p5.keyCode === p5.DOWN_ARROW){
+      }else if(p5.keyCode === p5.DOWN_ARROW){
         tiles -=1 
         tiles = Math.max(tiles, 1)
         image_to_ascii(p5)
         setTransform(p5,'Ascii Tile size: '+tiles)
+      }else if(p5.key === 'h'){
+        show_histogram = !show_histogram
       }
+      
     }
+    
 
     lastKey = p5.key
 
   }
-  const image_to_ascii= p5 =>{
+  const image_to_ascii = p5 =>{
     cols = origin.width/tiles
     to_gray_scale(0.2126,0.7152,0.0722)
     let aspect_ratio=transformed.width/transformed.height
@@ -236,6 +264,26 @@ const P5p1 =()=> {
 
   }
 
+  const calc_histogram =(p5,img)=>{
+    for (let i = 0; i < histogram.length;i++){
+      histogram[i]=0;
+    }
+      // Calculate the histogram
+      img.loadPixels()
+      for (let i=0;i<img.width*img.height*4;i+=4){
+        let bright = parseInt(0.299*img.pixels[i]+
+          0.587*img.pixels[i+1]+
+          0.114*img.pixels[i+2]);
+        histogram[bright]++;
+      }
+      histMax = p5.max(histogram);
+  }
+
+  const get_t = (p5,img,x,y)=>{
+    let index = (y*img.width+x)*4
+    img.loadPixels()
+    return p5.color(img.pixels[index],img.pixels[index+1],img.pixels[index+2])
+  }
   return(<Sketch preload={preload} setup={setup} draw={draw} keyPressed={keyPressed}/>)
 
 }

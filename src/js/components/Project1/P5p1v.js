@@ -42,11 +42,11 @@ const P5p1 =()=> {
   const EdgeMask=[[-1,-1,-1],[-1,8,-1],[-1,-1,-1]]
   const NormalizedBlurMask =[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]]
   const GausianBlurMask =[[1,4,6,4,1],[4,16,24,16,4],[6,24,36,24,6],[4,16,24,16,4],[1,4,6,4,1]]
-  const Mask = [[-1, -1, -1, -1, 0],
-    [-1, -1, -1, 0, 1],
-    [-1, -1, 0, 1, 1],
-    [-1, 0, 1, 1, 1],
-    [0, 1, 1, 1, 1]]
+  const Mask = [[ -1, -1, -1, -1, -1, ],  
+  [ -1, -1, -1, -1, -1, ],  
+  [ -1, -1, 24, -1, -1, ],  
+  [ -1, -1, -1, -1, -1, ],  
+  [ -1, -1, -1, -1, -1  ]]
 
   const  setup = (p5, canvasParentRef) => {
     initWidth = p5.windowWidth;
@@ -82,9 +82,7 @@ const P5p1 =()=> {
     drawing()
     if(to_ascii){
       pg2.image(image_ascii,initWidth*0.05,50,initWidth*scale,initWidth*scale)
-      pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
      }else{
-      pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
       pg2.image(transformed,initWidth*0.05,50,initWidth*scale, initWidth*scale)
     }
     p5.image(pg2,initWidth/2,0)
