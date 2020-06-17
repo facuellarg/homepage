@@ -49,9 +49,10 @@ const P5p1 =()=> {
     image_ascii.textStyle(pg2.NORMAL)
     image_ascii.textAlign(pg2.CENTER)
     cols =origin.width/tiles
+
     pg2.textFont(font,30)
     pg2.textAlign(pg2.CENTER,pg2.TOP)
-    p5.frameRate(30);
+
     calc_histogram(p5,transformed)
     
   };
@@ -98,7 +99,6 @@ const P5p1 =()=> {
       pg2.noStroke()
       
     }
-  
     pg2.text(`Transformed Image: ${transformation}`,initWidth*0.05,10,initWidth*scale, 50)
     p5.image(pg2,initWidth/2,0)
     

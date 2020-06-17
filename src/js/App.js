@@ -12,7 +12,7 @@ const App = () =>{
      <div className="main-container">
         <Menu></Menu>
          <div className="main-container__welcome-text">
-         <p align="center">El objetivo de esta pagina es presentar a los estudiantes que tomaran el curso de {course}</p>
+         <p align="center">Estudiantes Que presentan el taller  1 del curso {course}</p>
         </div>
 
          <a href="#profiles" name="integrantes"></a>
