@@ -82,9 +82,13 @@ const P5p1 =()=> {
     drawing()
     if(to_ascii){
       pg2.image(image_ascii,initWidth*0.05,50,initWidth*scale,initWidth*scale)
+      
      }else{
       pg2.image(transformed,initWidth*0.05,50,initWidth*scale, initWidth*scale)
+      
     }
+    pg2.stroke(255)
+    pg2.text(parseInt(p5.getFrameRate()),initWidth*0.05,50,initWidth*scale)
     p5.image(pg2,initWidth/2,0)
 
 

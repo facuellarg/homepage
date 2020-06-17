@@ -52,7 +52,7 @@ const P5p1 =()=> {
 
     pg2.textFont(font,30)
     pg2.textAlign(pg2.CENTER,pg2.TOP)
-
+    
     calc_histogram(p5,transformed)
     
   };
